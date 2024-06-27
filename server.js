@@ -8,4 +8,6 @@ const server = http.createServer(app)
 const port = process.env.port || 3000
 
 //listening requests to the respective port
-server.listen(port)
+server.listen(port, () => {
+    console.log(`Listening to ${port}`)
+})
