@@ -11,8 +11,13 @@ router.get('/', (req, res, next) => {
 })
 //Handlin POST request to /orders
 router.post('/', (req, res, next) => {
+    const order = {
+        id: req.body.id,
+        quantity: req.body.quantity
+    }
     res.status(201).json({
-        message: 'Handling POST request for orders'
+        message: 'Handling POST request for orders',
+        orderPlaced: order
     })
 })
 router.get('/:orderID', (req, res, next) => {
