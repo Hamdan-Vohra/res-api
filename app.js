@@ -1,11 +1,20 @@
+//dependencies
 const express = require('express')
 const morgan = require('morgan')
+const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const productRoutes = require('./routes/products')
 const orderRoutes = require('./routes/orders')
 
 //creating express app
 const app = express();
+
+const dbUrl = 'mongodb+srv://hamdanvohra5676:Humanatarians@rest-api.1odskct.mongodb.net/?retryWrites=true&w=majority&appName=rest-api'
+//if we have not created any database it will create by itw own of the same name as we mentioned in link like in this case 'nodedb'
+//this connect function runs asynchronously so we will use returned promise to run after it will be connected
+mongoose.connect(dbUrl).then(() => {
+    console.log('connected to database')
+}).catch((err) => { console.log(err) })
 
 //                  These Middlewares are funnels for each request
 
