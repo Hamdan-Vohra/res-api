@@ -3,8 +3,10 @@ const express = require('express')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
+
 const productRoutes = require('./routes/products')
 const orderRoutes = require('./routes/orders')
+const userRoutes = require('./routes/users')
 
 //creating express app
 const app = express();
@@ -42,6 +44,7 @@ app.use((req, res, next) => {
 //middleware for routes
 app.use('/products', productRoutes)
 app.use('/orders', orderRoutes)
+app.use('/users', userRoutes)
 
 //default case to handle error request
 app.use((req, res, next) => {
