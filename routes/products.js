@@ -7,17 +7,25 @@ const router = express.Router()
 //we use next function because it is running on middleware
 router.get('/', (req, res, next) => {
     //we can add more functionality after find() like find().where()
-    Product.find()
+    Product.find().select('name price _id') //this is the function to select which 
         .exec()
         .then(products => {
-            if (products.length >= 0) {
-                console.log(`ProductList: ${products}`)
-                res.status(200).json(products)
-            } else {
-                res.status(200).json({
-                    message: 'No products found'
+            const response = {
+                count: products.length,
+                products: products.map(product => {
+                    return {
+                        name: product.name,
+                        price: product.price,
+                        _id: product._id,
+                        request: {
+                            type: 'GET',
+                            url: 'http://localhost:3000/products/' + product._id
+                        }
+                    }
+
                 })
             }
+            res.status(200).json(response)
         })
         .catch(err => {
             console.log(err)
@@ -38,8 +46,16 @@ router.post('/', (req, res, next) => {
     product.save().then(result => {
         console.log(result)
         res.status(201).json({
-            message: 'Handling POST request',
-            createdProduct: result
+            message: 'Created Product',
+            createdProduct: {
+                name: result.name,
+                price: result.price,
+                _id: result._id,
+                request: {
+                    type: 'GET',
+                    url: 'http://localhost:3000/products/' + result._id
+                }
+            }
         })
     }).catch(err => {
         console.log('Error!', err)
@@ -50,12 +66,19 @@ router.post('/', (req, res, next) => {
 
 })
 router.get('/:productID', (req, res, next) => {
-    Product.findById(req.params.productID)
+    Product.findById(req.params.productID).select('name price _id')
         .exec()
         .then(result => {
             console.log(result)
             if (result) {
-                res.status(200).json(result)
+                res.status(200).json({
+                    product: result,
+                    request: {
+                        type: 'GET',
+                        description: 'GET_ALL_PRODUCTS',
+                        url: 'http://localhost:3000/products/'
+                    }
+                })
             } else {
                 res.status(404).json({
                     message: 'Product with such ID doesn\'t exist'
@@ -82,7 +105,13 @@ router.patch('/:productID', (req, res, next) => {
         .exec()
         .then(result => {
             console.log(result)
-            res.status(200).json(result)
+            res.status(200).json({
+                message: 'Updated Succesfully',
+                request: {
+                    type: 'GET',
+                    url: 'http://localhost:3000/products/' + id
+                }
+            })
         })
         .catch(err => {
             console.log(err)
