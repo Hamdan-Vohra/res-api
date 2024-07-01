@@ -48,6 +48,40 @@ router.post('/signup', (req, res, next) => {
         });
 });
 
+//login
+router.post('/login', (req, res, next) => {
+    User.find({ email: req.body.email })
+        .exec()
+        .then(user => {
+            if (user.length < 1) {
+                return res.status(401).json({
+                    message: 'Auth Failed'
+                })
+            }
+            bcrypt.compare(req.body.password, user[0].password, (err, flag) => {
+                if (err) {
+                    return res.status(401).json({
+                        message: 'Auth Failed'
+                    })
+                }
+                if (flag) {
+                    return res.status(200).json({
+                        message: 'Auth Succesfull'
+                    })
+                }
+                res.status(401).json({
+                    message: 'Auth Failed'
+                })
+            })
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            })
+        })
+})
+
 router.delete('/:userId', (req, res, next) => {
     User.findByIdAndDelete(req.params.userId)
         .exec()
