@@ -19,12 +19,13 @@ mongoose.connect(dbUrl).then(() => {
 //                  These Middlewares are funnels for each request
 
 app.use(morgan('dev')) //it will log about the requests and it will call next function on its behalf
-
+app.use('/uploads/', express.static('uploads'))
 // To parse the body urlencoded and supports json object but doesn't support files
 //extended: true to allow the extended bodies with rich data
 //extended: false allows to support only simple bodies fir URL encoded
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
+
 
 //Handling CORS Errors
 app.use((req, res, next) => {

@@ -1,13 +1,41 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const Product = require('../models/product')
+const multer = require('multer')
+
 //acessing router of an express app
 const router = express.Router()
+
+//initializing multer
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // cb(error,functionality)
+        cb(null, './uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, new Date.toISOString() + file.originalname)
+    }
+})
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true)
+    } else {
+        //reject a file and throws an error
+        cb(new Error({ message: 'Not meeting with image format' }), false)
+    }
+}
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5,
+    },
+    fileFilter,
+})
 
 //we use next function because it is running on middleware
 router.get('/', (req, res, next) => {
     //we can add more functionality after find() like find().where()
-    Product.find().select('name price _id') //this is the function to select which 
+    Product.find().select('name price _id productImage') //this is the function to select which 
         .exec()
         .then(products => {
             const response = {
@@ -16,6 +44,7 @@ router.get('/', (req, res, next) => {
                     return {
                         name: product.name,
                         price: product.price,
+                        productImage: product.productImage,
                         _id: product._id,
                         request: {
                             type: 'GET',
@@ -35,38 +64,41 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', upload.single('productImage'), (req, res, next) => {
+    console.log(req.file)
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price
+        price: req.body.price,
+        productImage: req.file.path
     })
 
     //save() is fn provided by the mongoose to store the mongoose model in database
-    product.save().then(result => {
-        console.log(result)
-        res.status(201).json({
-            message: 'Created Product',
-            createdProduct: {
-                name: result.name,
-                price: result.price,
-                _id: result._id,
-                request: {
-                    type: 'GET',
-                    url: 'http://localhost:3000/products/' + result._id
+    product.save()
+        .then(result => {
+            console.log(result)
+            res.status(201).json({
+                message: 'Created Product',
+                createdProduct: {
+                    name: result.name,
+                    price: result.price,
+                    _id: result._id,
+                    request: {
+                        type: 'GET',
+                        url: 'http://localhost:3000/products/' + result._id
+                    }
                 }
-            }
-        })
-    }).catch(err => {
-        console.log('Error!', err)
-        res.status(500).json({
-            error: err
-        })
-    });
+            })
+        }).catch(err => {
+            console.log('Error!', err)
+            res.status(500).json({
+                error: err
+            })
+        });
 
 })
 router.get('/:productID', (req, res, next) => {
-    Product.findById(req.params.productID).select('name price _id')
+    Product.findById(req.params.productID).select('name price _id productImage')
         .exec()
         .then(result => {
             console.log(result)
