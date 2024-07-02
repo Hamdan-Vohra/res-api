@@ -1,7 +1,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const Product = require('../models/product')
 const multer = require('multer')
+const Product = require('../models/product')
+const checkAuth = require('../middleware/check-auth')
 
 //acessing router of an express app
 const router = express.Router()
@@ -13,11 +14,11 @@ const storage = multer.diskStorage({
         cb(null, './uploads/')
     },
     filename: function (req, file, cb) {
-        cb(null, new Date.toISOString() + file.originalname)
+        cb(null, file.originalname)
     }
-})
+});
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    if (file.mimetype === 'image/jpg' || file.mimetype === 'image/png') {
         cb(null, true)
     } else {
         //reject a file and throws an error
@@ -25,12 +26,13 @@ const fileFilter = (req, file, cb) => {
     }
 }
 const upload = multer({
-    storage,
+    storage: storage,
     limits: {
-        fileSize: 1024 * 1024 * 5,
+        fileSize: 1024 * 1024 * 5
     },
-    fileFilter,
+    fileFilter
 })
+
 
 //we use next function because it is running on middleware
 router.get('/', (req, res, next) => {
@@ -64,7 +66,7 @@ router.get('/', (req, res, next) => {
         })
 })
 
-router.post('/', upload.single('productImage'), (req, res, next) => {
+router.post('/', checkAuth, upload.single('productImage'), (req, res, next) => {
     console.log(req.file)
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
