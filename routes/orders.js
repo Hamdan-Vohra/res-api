@@ -2,11 +2,12 @@ const express = require('express')
 const mongoose = require('mongoose')
 const Order = require('../models/orders')
 const product = require('../models/product')
+const checkAuth = require('../middleware/check-auth')
 const router = express.Router()
 
 //we use next function because it is running on middleware
 //Handlin GET request to /orders
-router.get('/', (req, res, next) => {
+router.get('/', checkAuth, (req, res, next) => {
     Order.find().select('product quantity')
         .populate('product', 'name')
         .exec()//used to change it into a full promise
@@ -30,7 +31,7 @@ router.get('/', (req, res, next) => {
         .catch(error => { res.status(500).json({ err: error }) })
 })
 //Handling POST request to /orders
-router.post('/', (req, res, next) => {
+router.post('/', checkAuth, (req, res, next) => {
 
     product.findById(req.body.productId)
         .exec()
@@ -70,7 +71,7 @@ router.post('/', (req, res, next) => {
         });
 });
 
-router.get('/:orderID', (req, res, next) => {
+router.get('/:orderID', checkAuth, (req, res, next) => {
     const id = req.params.orderID;
     Order.findById(id).select('product quantity _id')
         .populate('product', 'name price')
@@ -102,7 +103,7 @@ router.get('/:orderID', (req, res, next) => {
 
 })
 
-router.delete('/:orderID', (req, res, next) => {
+router.delete('/:orderID', checkAuth, (req, res, next) => {
     Order.findByIdAndDelete(req.params.orderID)
         .exec()
         .then(result => {

@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
     }
 });
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === 'image/jpg' || file.mimetype === 'image/png') {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
         cb(null, true)
     } else {
         //reject a file and throws an error
@@ -99,7 +99,7 @@ router.post('/', checkAuth, upload.single('productImage'), (req, res, next) => {
         });
 
 })
-router.get('/:productID', (req, res, next) => {
+router.get('/:productID', checkAuth, (req, res, next) => {
     Product.findById(req.params.productID).select('name price _id productImage')
         .exec()
         .then(result => {
@@ -125,7 +125,7 @@ router.get('/:productID', (req, res, next) => {
 })
 
 //updating Product using productID[it couldn't add attributes to schema]
-router.patch('/:productID', (req, res, next) => {
+router.patch('/:productID', checkAuth, (req, res, next) => {
     const id = req.params.productID;
     //we can do simply like this
     // $set : { name : req.body.newName , price : req.body.newPrice} it is mongoose keyword
